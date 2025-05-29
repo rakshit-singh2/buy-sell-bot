@@ -5,13 +5,18 @@ import AuthLayout from "./layouts/AuthLayout";
 
 import BotBoard from "./layouts/BotBoard";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import Logout from "./pages/Logout";
 
 export const Router = () => {
   return useRoutes([
     {
       path: "/auth",
       element: <AuthLayout />,
-      children: [{ path: "login", element: <LoginPage /> }],
+      children: [
+        { path: "login", element: <LoginPage /> },
+        { path: "register", element: <RegisterPage /> },
+      ],
     },
     {
       path: "/",
@@ -20,6 +25,7 @@ export const Router = () => {
         { path: "", element: <Bot /> },
         { path: "bot", element: <Bot /> },
         { path: "advanced-bot", element: <AdvancedBot /> },
+        { path: "logout", element: <Logout/> },
       ],
     },
   ]);

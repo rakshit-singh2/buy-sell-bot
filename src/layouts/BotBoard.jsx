@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton } from "@mui/material";
 import { Home, Menu } from "@mui/icons-material";
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -39,6 +40,10 @@ function BotBoard() {
               <SmartToyIcon />
             </ListItemIcon>
             <ListItemText primary="Bot" />
+          </ListItem>
+          <ListItem onClick={() => { navigate('/logout'); toggleDrawer(); }}>
+            <ListItemIcon><LogoutIcon /></ListItemIcon>
+            <ListItemText primary="Logout" />
           </ListItem>
         </List>
       </Drawer>

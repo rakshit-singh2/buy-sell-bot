@@ -18,7 +18,7 @@ const Bot = () => {
     const [buy, setBuy] = useState(true);
 
     return (
-        <Box className="boxs" sx={{ p: 5, mt: 4 }}>
+        <Box className="boxs" sx={{ p: 5, mt: 4, minHeight: "100vh"}}>
             <Box sx={{ textAlign: "center", mb: 2 }}>
                 <Typography variant="h6">Select Mode</Typography>
                 <FormControlLabel
