@@ -2,26 +2,28 @@ body{ font-size:14px !important;}
 p{font-size:14px !important;}
 a:focus, a:hover {color:#000; text-decoration: none;}
 span{font-size:14px !important;}
-header{ background:#000; padding:8px 40px 10px;    height: 75px;}
+header{ background:#143269; padding:8px 40px 10px;    height: 75px;}
 .header img{ width:200px;}
 .MuiSvgIcon-root{ display:none !important;}
-.copyright{background:#000; padding:15px 40px; text-align:center; color:#fff; font-size:16px;}
-.copyright a{color:#cba45d; text-decoration:none;}
-.css-1j2xeyr {padding: 40px !important; background:#ddd; margin-top:0px !important;}
-.sidebar{ background:#333;}
+.copyright{background:#102b5c; padding:15px 40px; text-align:center; color:#fff; font-size:16px;}
+.copyright a{color:#3fadff; text-decoration:none;}
+.css-1j2xeyr {padding: 40px !important; background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(245 231 247) 0%, rgb(216 235 255) 100%) !important; margin-top:0px !important;}
+.sidebar{ background:#143269;border-radius: 15px;padding-bottom: 45px !important;}
+.css-1j74uew-MuiPaper-root-MuiCard-root{border-radius: 15px !important;}
 .sidebar input {background: #ffffff; border-radius: 10px; border: none !important; height: 20px;    font-size: 14px;}
 .sidebar h6{ font-size:30px; font-weight:600; color:#fff;}
-.css-1elmdwi-MuiButtonBase-root-MuiButton-root{ background:#d5b36b !important;}
+.css-1elmdwi-MuiButtonBase-root-MuiButton-root{background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(194 59 217) 0%, #006cd7 100%);}
 table tr th{ border:1px solid #ddd !important; text-align: left !important;}
 
 .css-19opgx6-MuiFormControlLabel-root{margin-left: 0px; margin-right: 5px;}
 .css-113d811-MuiFormLabel-root-MuiInputLabel-root{color: rgba(0, 0, 0, 0.0) !important;  }
+table thead{background: #f2ecff;}
 
 .fa-sort-desc{vertical-align: top;}
 
 .advancedbtn {
     float: right;
-    background: #d5b36b;
+    background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(194 59 217) 0%, rgba(0, 212, 255, 1) 100%);
     padding: 8px 17px;
     color: #fff;
     text-decoration: none;
@@ -36,7 +38,7 @@ button{ font-size:14px !important;}
 fieldset{ border:none !important; }
 .sidebar label{font-size:16px !important;}
 table{ margin-top:15px;}
-.manu{ text-align:center;    margin-top: 9px;}
+.manu{ text-align:left;    margin-top: 9px;}
 .manu a {color: #fff; font-size: 16px;}
 .manu ul{ margin-top:18px; padding-left:0px; margin-left:0px;}
 .subnav{ margin-top:14px !important;}
@@ -52,7 +54,6 @@ table{ margin-top:15px;}
 .subnav li{ border-bottom:1px solid #ddd;}
 .subnav li:hover{ background:#d5b36b; }
 .subnav li:hover a{color:#fff;}
-header img{width: 220px; margin-top: 10px;}
 label{ font-size:18px !important;}
 input{ border:1px solid #ddd !important;}
 h5{ font-size:28px !important; margin-bottom:15px !important; font-weight:600 !important;}
@@ -68,16 +69,19 @@ body{background-color: #ebe8e3;}
     margin-top: 10px;
     border-radius: 6px;
 }
-.manu label{font-size: 14px !important; color: #000; font-weight: 500 !important;}
-.manu button{font-size: 14px !important; background: #fff; border-radius: 8px;}
+.manu label{font-size: 14px !important; color: #fff; font-weight: 500 !important;}
+.manu button{font-size: 14px !important;  background:#143269;  border-radius: 4px;  border: none; margin-top:0px;color: #fff; border: 2px solid #8d92ad;}
 .manu select {
     margin-left:0px;
     border-radius:0px;
     padding: 8px;
     border: none;
-	background:none;
+	background:#143269;
 	width:108px;
 }
+.css-29p9fw{    background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(245 231 247) 0%, rgb(216 235 255) 100%) !important;    margin-top:0px !important;}
+.css-1elmdwi-MuiButtonBase-root-MuiButton-root.Mui-disabled{color: #fff !important;}
+.css-1dmahy9-MuiTableCell-root{padding: 14px;}
 
 @media only screen and (max-width: 600px) {
   header {padding: 8px 14px 10px;display: inline-flex;}
