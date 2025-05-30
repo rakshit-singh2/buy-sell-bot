@@ -83,7 +83,7 @@ body{background-color: #ebe8e3;}
 .css-1elmdwi-MuiButtonBase-root-MuiButton-root.Mui-disabled{color: #fff !important;}
 .css-1dmahy9-MuiTableCell-root{padding: 14px;}
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 900px) {
   header {padding: 8px 14px 10px;display: inline-flex;}
   header img{ width:170px; margin-top: 14px;}
   .advancedbtn{padding: 8px 4px; font-size: 13px;}

@@ -2,11 +2,13 @@ import React from 'react';
 import '../App.css';
 import LogoDark from '../assets/LogoDark.png';
 import ChainSwitcher from './ChainSwitcher';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Stack } from '@mui/material';
 
 const Header = () => {
 
   const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   return (
     <header>
@@ -18,20 +20,19 @@ const Header = () => {
       </div>
 
       <ChainSwitcher />
+      <Stack direction="row" spacing={2}>
 
-      {pathname != '/advanced-bot' ?
-        <div className='col-md-3'>
-          <a className='advancedbtn' href="/advanced-bot">
-            Advanced Bot
-          </a>
-        </div>
-        :
-        <div className='col-md-3'>
-          <a className='advancedbtn' href="/bot">
-            Bot
-          </a>
-        </div>
-      }
+      <div className="col-md-3">
+        <a className="advancedbtn" href={pathname !== '/advanced-bot' ? '/advanced-bot' : '/bot'}>
+          {pathname !== '/advanced-bot' ? 'Advanced' : 'Bot'}
+        </a>
+      </div>
+      <div className="col-md-3">
+        <a className="advancedbtn" onClick={() => { navigate('/logout'); toggleDrawer(); }}>
+          Logout
+        </a>
+      </div>
+    </Stack>
     </header>
   );
 };

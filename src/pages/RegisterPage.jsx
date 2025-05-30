@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { TextField, Button, Container, Typography, Paper, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const RegisterPage = () => {
+
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleRegister = () => {
     if (!email || !password) {
-      setMessage("Email and Password are required.");
+      alert("Email and Password are required.");
       return;
     }
 
@@ -19,7 +22,7 @@ const RegisterPage = () => {
     const userExists = existingUsers.some((user) => user.email === email);
 
     if (userExists) {
-      setMessage("User already registered. Please log in.");
+      alert("User already registered. Please log in.");
       return;
     }
 
@@ -27,7 +30,7 @@ const RegisterPage = () => {
     const newUser = { email, password };
     localStorage.setItem("users", JSON.stringify([...existingUsers, newUser]));
 
-    setMessage("Registration successful! You can now log in.");
+    alert("Registration successful! You can now log in.");
     setEmail("");
     setPassword("");
   };
@@ -40,23 +43,30 @@ const RegisterPage = () => {
         </Typography>
         {error && <Typography color="error">{error}</Typography>}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField 
-            label="Email" 
-            variant="outlined" 
-            fullWidth 
-            value={email} 
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <TextField 
-            label="Password" 
-            variant="outlined" 
-            type="password" 
-            fullWidth 
-            value={password} 
+          <TextField
+            label="Password"
+            variant="outlined"
+            type="password"
+            fullWidth
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           <Button variant="contained" color="primary" onClick={handleRegister}>
             Register
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/auth/login")}
+          >
+            Login
           </Button>
         </Box>
       </Paper>
