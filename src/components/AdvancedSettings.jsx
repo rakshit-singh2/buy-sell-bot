@@ -5,10 +5,16 @@ import { isAddress } from "viem";
 const Settings = ({ config, setConfig }) => {
   const [router, setRouter] = useState("");
   const [token, setToken] = useState("");
-  const [sellAmounts, setSellAmounts] = useState([]);
-  const [buyAmounts, setBuyAmounts] = useState([]);
-  const [buyGaps, setBuyGaps] = useState([]);
-  const [sellGaps, setSellGaps] = useState([]);
+
+  const [buyMinAmount, setBuyMinAmount] = useState("");
+  const [buyMaxAmount, setBuyMaxAmount] = useState("");
+  const [buyMinGap, setBuyMinGap] = useState("");
+  const [buyMaxGap, setBuyMaxGap] = useState("");
+  const [sellMinAmount, setSellMinAmount] = useState("");
+  const [sellMaxAmount, setSellMaxAmount] = useState("");
+  const [sellMinGap, setSellMinGap] = useState("");
+  const [sellMaxGap, setSellMaxGap] = useState("");
+
   const [buyTransactions, setBuyTransactions] = useState(null);
   const [sellTransactions, setSellTransactions] = useState(null);
   const [slippage, setSlippage] = useState();
@@ -23,17 +29,23 @@ const Settings = ({ config, setConfig }) => {
       slippage,
       buyTransactions,
       sellTransactions,
-      buyAmounts,
-      sellAmounts,
-      buyGaps,
-      sellGaps
+      buyMinAmount,
+      buyMaxAmount,
+      buyMinGap,
+      buyMaxGap,
+      sellMinAmount,
+      sellMaxAmount,
+      sellMinGap,
+      sellMaxGap
     }));
-  }, [router, token, privateKey, slippage, buyTransactions, sellTransactions, buyAmounts, sellAmounts, buyGaps, sellGaps]);
-
+  }, [
+    router, token, privateKey, slippage, buyTransactions, sellTransactions,
+    buyMinAmount, buyMaxAmount, buyMinGap, buyMaxGap,
+    sellMinAmount, sellMaxAmount, sellMinGap, sellMaxGap
+  ]);
 
   return (
     <Card>
-
       <CardContent className="sidebar">
         <Typography variant="h6">Bot Settings</Typography>
         <Stack spacing={2} sx={{ mt: 2 }}>
@@ -43,10 +55,7 @@ const Settings = ({ config, setConfig }) => {
             value={router}
             error={!!router && !isAddress(router)}
             helperText={!!router && !isAddress(router) ? "Invalid Ethereum address" : ""}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\s/g, '')
-              setRouter(value)
-            }}
+            onChange={(e) => setRouter(e.target.value.replace(/\s/g, ''))}
             fullWidth
             disabled={config.isRunning}
           />
@@ -57,10 +66,7 @@ const Settings = ({ config, setConfig }) => {
             value={token}
             error={!!token && !isAddress(token)}
             helperText={!!token && !isAddress(token) ? "Invalid Ethereum address" : ""}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\s/g, '')
-              setToken(value)
-            }}
+            onChange={(e) => setToken(e.target.value.replace(/\s/g, ''))}
             fullWidth
             disabled={config.isRunning}
           />
@@ -68,91 +74,96 @@ const Settings = ({ config, setConfig }) => {
           <TextField
             label="Number of buys"
             type="number"
-            variant="outlined"
             value={buyTransactions}
             onChange={(e) => setBuyTransactions(parseInt(e.target.value) || 0)}
             fullWidth
-            input={{ step: "1", inputMode: "numeric" }}
             disabled={config.isRunning}
           />
 
-          {Array.from({ length: buyTransactions || 0 }).map((_, i) => (
-            <Stack key={`buy-${i}`} spacing={1}>
-              <TextField
-                label={`Buy Amount for Step ${i + 1}`}
-                type="text"
-                value={buyAmounts[i] || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (!/^\d*\.?\d*$/.test(val)) return;
-                  const updated = [...buyAmounts];
-                  updated[i] = val;
-                  setBuyAmounts(updated);
-                }}
-                fullWidth
-                disabled={config.isRunning}
-              />
-              <TextField
-                label={`Buy Gap after Step ${i + 1} (sec)`}
-                type="number"
-                value={buyGaps[i] || ""}
-                onChange={(e) => {
-                  const updated = [...buyGaps];
-                  updated[i] = parseInt(e.target.value) || 0;
-                  setBuyGaps(updated);
-                }}
-                fullWidth
-                disabled={config.isRunning}
-              />
-            </Stack>
-          ))}
+          <TextField
+            label="Buy Min Amount"
+            type="text"
+            value={buyMinAmount}
+            onChange={(e) => setBuyMinAmount(e.target.value)}
+            fullWidth
+            disabled={config.isRunning}
+          />
+
+          <TextField
+            label="Buy Max Amount"
+            type="text"
+            value={buyMaxAmount}
+            onChange={(e) => setBuyMaxAmount(e.target.value)}
+            fullWidth
+            disabled={config.isRunning}
+          />
+
+          <TextField
+            label="Buy Min Gap (sec)"
+            type="number"
+            value={buyMinGap}
+            onChange={(e) => setBuyMinGap(e.target.value)}
+            fullWidth
+            disabled={config.isRunning}
+          />
+
+          <TextField
+            label="Buy Max Gap (sec)"
+            type="number"
+            value={buyMaxGap}
+            onChange={(e) => setBuyMaxGap(e.target.value)}
+            fullWidth
+            disabled={config.isRunning}
+          />
 
           <TextField
             label="Number of sells"
             type="number"
-            variant="outlined"
             value={sellTransactions}
             onChange={(e) => setSellTransactions(parseInt(e.target.value) || 0)}
             fullWidth
-            input={{ step: "1", inputMode: "numeric" }}
             disabled={config.isRunning}
           />
 
-          {Array.from({ length: sellTransactions || 0 }).map((_, i) => (
-            <Stack key={`sell-${i}`} spacing={1}>
-              <TextField
-                label={`Sell Amount for Step ${i + 1}`}
-                type="text"
-                value={sellAmounts[i] || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (!/^\d*\.?\d*$/.test(val)) return;
-                  const updated = [...sellAmounts];
-                  updated[i] = val;
-                  setSellAmounts(updated);
-                }}
-                fullWidth
-                disabled={config.isRunning}
-              />
-              <TextField
-                label={`Sell Gap after Step ${i + 1} (sec)`}
-                type="number"
-                value={sellGaps[i] || ""}
-                onChange={(e) => {
-                  const updated = [...sellGaps];
-                  updated[i] = parseInt(e.target.value) || 0;
-                  setSellGaps(updated);
-                }}
-                fullWidth
-                disabled={config.isRunning}
-              />
-            </Stack>
-          ))}
+          <TextField
+            label="Sell Min Amount"
+            type="text"
+            value={sellMinAmount}
+            onChange={(e) => setSellMinAmount(e.target.value)}
+            fullWidth
+            disabled={config.isRunning}
+          />
+
+          <TextField
+            label="Sell Max Amount"
+            type="text"
+            value={sellMaxAmount}
+            onChange={(e) => setSellMaxAmount(e.target.value)}
+            fullWidth
+            disabled={config.isRunning}
+          />
+
+          <TextField
+            label="Sell Min Gap (sec)"
+            type="number"
+            value={sellMinGap}
+            onChange={(e) => setSellMinGap(e.target.value)}
+            fullWidth
+            disabled={config.isRunning}
+          />
+
+          <TextField
+            label="Sell Max Gap (sec)"
+            type="number"
+            value={sellMaxGap}
+            onChange={(e) => setSellMaxGap(e.target.value)}
+            fullWidth
+            disabled={config.isRunning}
+          />
 
           <TextField
             label="Slippage"
             type="number"
-            variant="outlined"
             value={slippage}
             onChange={(e) => {
               let value = Number(e.target.value);
@@ -166,14 +177,10 @@ const Settings = ({ config, setConfig }) => {
 
           <TextField
             label="Private Key"
-            variant="outlined"
             value={privateKey}
-            error={!!privateKey && !/^[0-9a-fA-F]{64}$/.test(privateKey)} // checks if it's a valid 64 hex chars string
+            error={!!privateKey && !/^[0-9a-fA-F]{64}$/.test(privateKey)}
             helperText={!!privateKey && !/^[0-9a-fA-F]{64}$/.test(privateKey) ? "Invalid Private Key" : ""}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\s/g, '') // remove spaces
-              setPrivateKey(value)
-            }}
+            onChange={(e) => setPrivateKey(e.target.value.replace(/\s/g, ''))}
             fullWidth
             disabled={config.isRunning}
           />

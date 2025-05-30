@@ -7,16 +7,20 @@ const AdvancedBot = () => {
     const [config, setConfig] = useState({
         router: null,
         token: null,
-        buyAmounts: [],      // ← NEW
-        sellAmounts: [],     // ← NEW
-        buyGaps: [],         // ← NEW
-        sellGaps: [],        // ← NEW
         buyTransactions: 0,
         sellTransactions: 0,
         slippage: 0,
         isRunning: false,
         privateKey: null,
-      });
+        buyMinAmount: null,
+        buyMaxAmount: null,
+        buyMinGap: null,
+        buyMaxGap: null,
+        sellMinAmount: null,
+        sellMaxAmount: null,
+        sellMinGap: null,
+        sellMaxGap: null
+    });
 
     return (
         <Box sx={{ p: 5, mt: 4 }}>
