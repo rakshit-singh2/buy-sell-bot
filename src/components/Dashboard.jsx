@@ -384,7 +384,7 @@ const Dashboard = ({ config, setConfig, buy }) => {
                           rel="noopener noreferrer"
                           style={{ textDecoration: "none", color: "#1976d2", fontWeight: "bold" }}
                         >
-                          {`${row.sellHash?.slice(0, 6)}...${row?.sellHash.slice(-4)}`}
+                          {`${row?.sellHash?.slice(0, 6)}...${row?.sellHash?.slice(-4)}`}
                         </Link>
                       </TableCell>
                       <TableCell sx={{ fontSize: "1.4rem" }}>{row?.expectedBnb}</TableCell>
