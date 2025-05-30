@@ -20,19 +20,18 @@ const Header = () => {
       </div>
 
       <ChainSwitcher />
-      <Stack direction="row" spacing={2}>
+     
 
       <div className="col-md-3">
         <a className="advancedbtn" href={pathname !== '/advanced-bot' ? '/advanced-bot' : '/bot'}>
           {pathname !== '/advanced-bot' ? 'Advanced' : 'Bot'}
         </a>
-      </div>
-      <div className="col-md-3">
-        <a className="advancedbtn" onClick={() => { navigate('/logout'); toggleDrawer(); }}>
+		 <a className="advancedbtn logout" onClick={() => { navigate('/logout'); toggleDrawer(); }}>
           Logout
         </a>
       </div>
-    </Stack>
+      
+    
     </header>
   );
 };

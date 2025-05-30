@@ -23,7 +23,7 @@ table thead{background: #f2ecff;}
 
 .advancedbtn {
     float: right;
-    background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(194 59 217) 0%, rgba(0, 212, 255, 1) 100%);
+    background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(194 59 217) 0%, #1586f7 100%);
     padding: 8px 17px;
     color: #fff;
     text-decoration: none;
@@ -63,7 +63,7 @@ h5{ font-size:28px !important; margin-bottom:15px !important; font-weight:600 !i
 .loginbox input{font-size: 14px !important;}
 body{background-color: #ebe8e3;}
 .loginbox button {
-    background-color: #d5c27b !important;
+    background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(194 59 217) 0%, #006cd7 100%);
     padding: 10px 0px 7px;
     font-size: 18px !important;
     margin-top: 10px;
@@ -82,6 +82,12 @@ body{background-color: #ebe8e3;}
 .css-29p9fw{    background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(245 231 247) 0%, rgb(216 235 255) 100%) !important;    margin-top:0px !important;}
 .css-1elmdwi-MuiButtonBase-root-MuiButton-root.Mui-disabled{color: #fff !important;}
 .css-1dmahy9-MuiTableCell-root{padding: 14px;}
+.tlt{font-size: 17px !important;}
+.css-19sczbs{background: linear-gradient(243deg, rgb(173 64 217) 0%, rgb(194 59 217) 0%, #006cd7 100%);}
+.logout{ margin-right:10px;}
+.MuiFormLabel-root{ color:#000 !important;}
+.css-113d811-MuiFormLabel-root-MuiInputLabel-root{top:10px !important;}
+.css-1niro10{top:10px !important;color: #000;}
 
 @media only screen and (max-width: 900px) {
   header {padding: 8px 14px 10px;display: inline-flex;}

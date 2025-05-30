@@ -107,7 +107,7 @@ const Settings = ({ config, setConfig, buy }) => {
             fullWidth
             disabled={config.isRunning}
           />
-          <Typography variant="subtitle1">Amount Range (in Token)</Typography>
+          <Typography className="tlt" variant="subtitle1">Amount Range (in Token)</Typography>
           <Stack direction="row" spacing={2}>
             <TextField
               label="Min"
@@ -127,7 +127,7 @@ const Settings = ({ config, setConfig, buy }) => {
             />
           </Stack>
 
-          <Typography variant="subtitle1">Gap Range (in seconds)</Typography>
+          <Typography className="tlt" variant="subtitle1">Gap Range (in seconds)</Typography>
           <Stack direction="row" spacing={2}>
             <TextField
               label="Min"
