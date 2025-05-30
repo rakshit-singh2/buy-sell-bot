@@ -10,12 +10,12 @@ import routerAbi from "../helpers/router.json";
 import tokenAbi from "../helpers/token.json";
 import { useAppSelector } from "../redux/store";
 
-const createBuyData = (count, bnbBalance, expectedRequirement, buyHash, status, error) => {
-  return { count, bnbBalance, expectedRequirement, buyHash, status, error };
+const createBuyData = (count, bnbBalance, expectedRequirement, amount, gap, buyHash, status, error) => {
+  return { count, bnbBalance, expectedRequirement, amount, gap, buyHash, status, error };
 };
 
-const createSellData = (count, tokenBalance, bnbBalance, approveHash, sellHash, expectedBnb, minBnb, status, error) => {
-  return { count, tokenBalance, bnbBalance, approveHash, sellHash, expectedBnb, minBnb, status, error };
+const createSellData = (count, tokenBalance, bnbBalance, amount, gap, approveHash, sellHash, expectedBnb, minBnb, status, error) => {
+  return { count, tokenBalance, bnbBalance, approveHash, amount, gap, sellHash, expectedBnb, minBnb, status, error };
 };
 
 
@@ -87,12 +87,18 @@ const Dashboard = ({ config, setConfig, buy }) => {
     if (buy) {
       for (let i = 0; i < config.transactions; i++) {
         try {
-          const amountForStep = config.amounts?.[i];
-          const gapForStep = config.gaps?.[i] || 0;
+          const amountForStep = (
+            Math.random() * (parseFloat(config.maxAmount) - parseFloat(config.minAmount)) +
+            parseFloat(config.minAmount)
+          ).toFixed(6);
 
-          if (!amountForStep || isNaN(amountForStep)) {
-            throw new Error(`Invalid amount at step ${i + 1}`);
-          }
+          const gapForStep = Math.floor(
+            Math.random() * (parseInt(config.maxGap) - parseInt(config.minGap)) +
+            parseInt(config.minGap)
+          );
+
+          rows[i].amount = amountForStep;
+          rows[i].gap = gapForStep;
 
           if (i !== 0) {
             await new Promise((resolve) => setTimeout(resolve, gapForStep * 1000));
@@ -140,7 +146,7 @@ const Dashboard = ({ config, setConfig, buy }) => {
           rows[i].status = "Success";
         } catch (error) {
           console.error({ error });
-          alert("Error executing trade: " + error?.shortMessage || error.message);
+          alert("Error executing trade: " + (error?.shortMessage || error.message));
           rows[i].error = error?.shortMessage || error.message;
           rows[i].status = "Failed";
           setIsRunning(false);
@@ -148,10 +154,19 @@ const Dashboard = ({ config, setConfig, buy }) => {
         }
       }
     }
-    
+
     else {
       try {
-        const totalSellAmount = config.amounts.reduce((sum, val) => sum + parseFloat(val || 0), 0);
+        const sellAmounts = Array.from({ length: config.transactions }).map(() =>
+          parseFloat(
+            (
+              Math.random() * (parseFloat(config.maxAmount) - parseFloat(config.minAmount)) +
+              parseFloat(config.minAmount)
+            ).toFixed(6)
+          )
+        );
+
+        const totalSellAmount = sellAmounts.reduce((sum, val) => sum + val, 0);
 
         const tokenBalance = await publicClient.readContract({
           address: config.token,
@@ -192,13 +207,13 @@ const Dashboard = ({ config, setConfig, buy }) => {
 
         for (let i = 0; i < config.transactions; i++) {
           try {
-            const amountForStep = config.amounts?.[i];
-            const gapForStep = config.gaps?.[i] || 0;
-
-            if (!amountForStep || isNaN(amountForStep)) {
-              throw new Error(`Invalid amount at step ${i + 1}`);
-            }
-
+            const amountForStep = sellAmounts[i];
+            const gapForStep = Math.floor(
+              Math.random() * (parseInt(config.maxGap) - parseInt(config.minGap)) +
+              parseInt(config.minGap)
+            );
+            rows[i].amount = sellAmounts[i];
+            rows[i].gap = gapForStep;
             if (i !== 0) {
               await new Promise((resolve) => setTimeout(resolve, gapForStep * 1000));
             }
@@ -216,6 +231,7 @@ const Dashboard = ({ config, setConfig, buy }) => {
 
             rows[i].tokenBalance = `${formatEther(tokenBal)} ${tokenSymbol}`;
             setTokenBalance(`Token Balance: ${formatEther(tokenBal)} ${tokenSymbol}`);
+
             rows[i].approveHash = approveTxHash;
 
             const amountsOut = await router.read.getAmountsOut([
@@ -256,7 +272,7 @@ const Dashboard = ({ config, setConfig, buy }) => {
             rows[i].status = "Success";
           } catch (error) {
             console.error({ error });
-            alert("Error executing trade: " + error?.shortMessage || error.message);
+            alert("Error executing trade: " + (error?.shortMessage || error.message));
             rows[i].error = error?.shortMessage || error.message;
             rows[i].status = "Failed";
             setIsRunning(false);
@@ -265,9 +281,10 @@ const Dashboard = ({ config, setConfig, buy }) => {
         }
       } catch (error) {
         console.error({ error });
-        alert("Setup error: " + error?.shortMessage || error.message);
+        alert("Setup error: " + (error?.shortMessage || error.message));
         setIsRunning(false);
       }
+      setIsRunning(false);
     }
 
     setIsRunning(false);
@@ -302,6 +319,8 @@ const Dashboard = ({ config, setConfig, buy }) => {
               <TableRow >
                 <TableCell align="left" sx={{ width: "80px", minWidth: "80px", maxWidth: "80px", fontSize: "1.5rem", fontWeight: "bold" }}>S.No.</TableCell>
                 <TableCell sx={{ fontSize: "1.5rem", fontWeight: "bold" }} >Pre-Transaction BNB Balance</TableCell>
+                <TableCell sx={{ fontSize: "1.5rem", fontWeight: "bold" }} >Amount</TableCell>
+                <TableCell sx={{ fontSize: "1.5rem", fontWeight: "bold" }} >Gap</TableCell>
                 {buy ? (
                   <>
                     <TableCell sx={{ fontSize: "1.5rem", fontWeight: "bold" }}>Buy Hash</TableCell>
@@ -326,16 +345,18 @@ const Dashboard = ({ config, setConfig, buy }) => {
                 <TableRow key={index}>
                   <TableCell align="left" sx={{ width: "80px", minWidth: "80px", maxWidth: "80px", fontSize: "1.4rem" }}>{row.count}</TableCell>
                   <TableCell sx={{ fontSize: "1.4rem" }}>{row.bnbBalance}</TableCell>
+                  <TableCell sx={{ fontSize: "1.4rem" }}>{row.amount}</TableCell>
+                  <TableCell sx={{ fontSize: "1.4rem" }}>{row.gap}</TableCell>
                   {buy ? (
                     <>
                       <TableCell sx={{ fontSize: "1.4rem" }}>
                         <Link
-                          href={`${chainDetails.chainDetails.chain.blockExplorers.default.url}/tx/${row.buyHash}`}
+                          href={`${chainDetails.chainDetails.chain.blockExplorers.default.url}/tx/${row?.buyHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ textDecoration: "none", color: "#1976d2" }}
                         >
-                          {`${row.buyHash.slice(0, 6)}...${row.buyHash.slice(-4)}`}
+                          {`${row.buyHash?.slice(0, 6)}...${row.buyHash?.slice(-4)}`}
                         </Link>
                       </TableCell>
                       <TableCell sx={{ color: row.status === "Success" ? "success.main" : "error.main", fontSize: "1.4rem" }}>
@@ -348,7 +369,7 @@ const Dashboard = ({ config, setConfig, buy }) => {
                       <TableCell sx={{ fontSize: "1.4rem" }}>{row.tokenBalance}</TableCell>
                       <TableCell sx={{ fontSize: "1.4rem" }}>
                         <Link
-                          href={`${chainDetails.chainDetails.chain.blockExplorers.default.url}/tx/${row.buyHash}`}
+                          href={`${chainDetails.chainDetails.chain.blockExplorers.default.url}/tx/${row?.approveHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ textDecoration: "none", color: "#1976d2" }}
@@ -358,16 +379,16 @@ const Dashboard = ({ config, setConfig, buy }) => {
                       </TableCell>
                       <TableCell sx={{ fontSize: "1.4rem" }}>
                         <Link
-                          href={`${chainDetails.chainDetails.chain.blockExplorers.default.url}/tx/${row.sellHash}`}
+                          href={`${chainDetails.chainDetails.chain.blockExplorers.default.url}/tx/${row?.sellHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ textDecoration: "none", color: "#1976d2", fontWeight: "bold" }}
                         >
-                          {`${row.sellHash.slice(0, 6)}...${row.sellHash.slice(-4)}`}
+                          {`${row.sellHash?.slice(0, 6)}...${row?.sellHash.slice(-4)}`}
                         </Link>
                       </TableCell>
-                      <TableCell sx={{ fontSize: "1.4rem" }}>{row.expectedBnb}</TableCell>
-                      <TableCell sx={{ fontSize: "1.4rem" }}>{row.minBnb}</TableCell>
+                      <TableCell sx={{ fontSize: "1.4rem" }}>{row?.expectedBnb}</TableCell>
+                      <TableCell sx={{ fontSize: "1.4rem" }}>{row?.minBnb}</TableCell>
                       <TableCell sx={{ color: row.status === "Success" ? "success.main" : "error.main", fontSize: "1.4rem" }}>
                         {row.status}
                       </TableCell>

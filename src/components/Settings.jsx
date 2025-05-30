@@ -8,8 +8,11 @@ const Settings = ({ config, setConfig, buy }) => {
   const [transactions, setTransactions] = useState(null);
   const [slippage, setSlippage] = useState();
   const [privateKey, setPrivateKey] = useState("");
-  const [amounts, setAmounts] = useState([]);
-  const [gaps, setGaps] = useState([]);
+
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
+  const [minGap, setMinGap] = useState("");
+  const [maxGap, setMaxGap] = useState("");
 
   useEffect(() => {
     setConfig((prev) => {
@@ -17,15 +20,17 @@ const Settings = ({ config, setConfig, buy }) => {
         ...prev,
         router,
         token,
-        amounts,
-        gaps,
+        minAmount,
+        maxAmount,
+        minGap,
+        maxGap,
         transactions,
         privateKey,
         slippage: buy ? 0 : slippage,
       };
       return JSON.stringify(prev) !== JSON.stringify(newConfig) ? newConfig : prev;
     });
-  }, [router, token, amounts, gaps, transactions, privateKey, slippage, buy]);
+  }, [router, token, transactions, privateKey, slippage, minAmount, maxAmount, minGap, maxGap, buy]);
 
 
   return (
@@ -102,39 +107,45 @@ const Settings = ({ config, setConfig, buy }) => {
             fullWidth
             disabled={config.isRunning}
           />
+          <Typography variant="subtitle1">Amount Range (in Token)</Typography>
+          <Stack direction="row" spacing={2}>
+            <TextField
+              label="Min"
+              type="number"
+              value={minAmount}
+              onChange={(e) => setMinAmount(e.target.value)}
+              disabled={config.isRunning}
+              fullWidth
+            />
+            <TextField
+              label="Max"
+              type="number"
+              value={maxAmount}
+              onChange={(e) => setMaxAmount(e.target.value)}
+              disabled={config.isRunning}
+              fullWidth
+            />
+          </Stack>
 
-          {Array.from({ length: transactions || 0 }).map((_, i) => (
-            <Stack key={i} spacing={1}>
-              <TextField
-                label={`Amount for Step ${i + 1}`}
-                type="text"
-                value={amounts[i] || ""}
-                onChange={(e) => {
-                  const inputValue = e.target.value;
-                  if (!/^\d*\.?\d*$/.test(inputValue)) return; // Validate numeric input
-
-                  const updated = [...amounts];
-                  updated[i] = inputValue;
-                  setAmounts(updated);
-                }}
-                fullWidth
-                disabled={config.isRunning}
-              />
-
-              <TextField
-                label={`Gap after Step ${i + 1} (sec)`}
-                type="number"
-                value={gaps[i] || ""}
-                onChange={(e) => {
-                  const updated = [...gaps];
-                  updated[i] = parseInt(e.target.value) || 0;
-                  setGaps(updated);
-                }}
-                fullWidth
-                disabled={config.isRunning}
-              />
-            </Stack>
-          ))}
+          <Typography variant="subtitle1">Gap Range (in seconds)</Typography>
+          <Stack direction="row" spacing={2}>
+            <TextField
+              label="Min"
+              type="number"
+              value={minGap}
+              onChange={(e) => setMinGap(e.target.value)}
+              disabled={config.isRunning}
+              fullWidth
+            />
+            <TextField
+              label="Max"
+              type="number"
+              value={maxGap}
+              onChange={(e) => setMaxGap(e.target.value)}
+              disabled={config.isRunning}
+              fullWidth
+            />
+          </Stack>
         </Stack>
       </CardContent>
     </Card>

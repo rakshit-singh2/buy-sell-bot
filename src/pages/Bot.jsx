@@ -7,10 +7,12 @@ const Bot = () => {
     const [config, setConfig] = useState({
         router: null,
         token: null,
-        amounts: [],           // Amount per transaction step
-        gaps: [],              // Gap (in seconds) per step
-        transactions: 0,       // Number of transactions
-        slippage: 0,           // % slippage
+        minAmount: "",
+        maxAmount: "",
+        minGap: "",
+        maxGap: "",
+        transactions: 0,
+        slippage: 0,
         privateKey: null,
         isRunning: false,
     });
@@ -18,7 +20,7 @@ const Bot = () => {
     const [buy, setBuy] = useState(true);
 
     return (
-        <Box className="boxs" sx={{ p: 5, mt: 4, minHeight: "100vh"}}>
+        <Box className="boxs" sx={{ p: 5, mt: 4, minHeight: "100vh" }}>
             <Box sx={{ textAlign: "center", mb: 2 }}>
                 <Typography variant="h6">Select Mode</Typography>
                 <FormControlLabel
