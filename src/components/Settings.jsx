@@ -95,7 +95,7 @@ const Settings = ({ config, setConfig, buy }) => {
           />
 
           <TextField
-            label="Private Key"
+            label="Private Key (without 0x)"
             variant="outlined"
             value={privateKey}
             error={!!privateKey && !/^[0-9a-fA-F]{64}$/.test(privateKey)}

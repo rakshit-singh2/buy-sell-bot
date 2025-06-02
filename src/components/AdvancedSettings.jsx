@@ -176,7 +176,7 @@ const Settings = ({ config, setConfig }) => {
           />
 
           <TextField
-            label="Private Key"
+            label="Private Key (without 0x)"
             value={privateKey}
             error={!!privateKey && !/^[0-9a-fA-F]{64}$/.test(privateKey)}
             helperText={!!privateKey && !/^[0-9a-fA-F]{64}$/.test(privateKey) ? "Invalid Private Key" : ""}

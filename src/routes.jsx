@@ -23,7 +23,7 @@ export const Router = () => {
       element: <BotBoard />,
       children: [
         { path: "", element: <Bot /> },
-        { path: "advanced-bot", element: <AdvancedBot /> },
+        { path: "advanced", element: <AdvancedBot /> },
         { path: "logout", element: <Logout/> },
       ],
     },
