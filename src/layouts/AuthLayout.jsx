@@ -7,7 +7,7 @@ const AuthLayout = () => {
     const { isLoggedIn } = useSelector((state) => state.auth);
 
     if (isLoggedIn) {
-        return <Navigate to="/bot" />
+        return <Navigate to="/" />
     }
 
     return (
