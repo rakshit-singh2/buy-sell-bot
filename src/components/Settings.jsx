@@ -110,21 +110,44 @@ const Settings = ({ config, setConfig, buy }) => {
           <Typography className="tlt" variant="subtitle1">Amount Range (in Token)</Typography>
           <Stack direction="row" spacing={2}>
             <TextField
-              label="Min"
-              type="number"
-              value={minAmount}
-              onChange={(e) => setMinAmount(e.target.value)}
-              disabled={config.isRunning}
-              fullWidth
-            />
-            <TextField
-              label="Max"
-              type="number"
-              value={maxAmount}
-              onChange={(e) => setMaxAmount(e.target.value)}
-              disabled={config.isRunning}
-              fullWidth
-            />
+            label="Min Amount %"
+            type="number"
+            value={minAmount}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                setMinAmount(value);
+              }
+            }}
+            slotProps={{
+              input: {
+                min: 0,
+                max: 100,
+              },
+            }}
+            fullWidth
+            disabled={config.isRunning}
+          />
+
+          <TextField
+            label="Max Amount %"
+            type="number"
+            value={maxAmount}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                setMaxAmount(value);
+              }
+            }}
+            slotProps={{
+              input: {
+                min: 0,
+                max: 100,
+              },
+            }}
+            fullWidth
+            disabled={config.isRunning}
+          />
           </Stack>
 
           <Typography className="tlt" variant="subtitle1">Gap Range (in seconds)</Typography>

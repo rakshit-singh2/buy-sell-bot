@@ -35,12 +35,12 @@ function BotBoard() {
             <ListItemText primary="Home" />
           </ListItem>
           {/* Navigation */}
-          <ListItem sx={{ cursor: "pointer" }} onClick={() => { navigate('/'); toggleDrawer(); }}>
+          {/* <ListItem sx={{ cursor: "pointer" }} onClick={() => { navigate('/'); toggleDrawer(); }}>
             <ListItemIcon>
               <SmartToyIcon />
             </ListItemIcon>
             <ListItemText primary="Bot" />
-          </ListItem>
+          </ListItem> */}
           <ListItem onClick={() => { navigate('/logout'); toggleDrawer(); }}>
             <ListItemIcon><LogoutIcon /></ListItemIcon>
             <ListItemText primary="Logout" />

@@ -81,19 +81,41 @@ const Settings = ({ config, setConfig }) => {
           />
 
           <TextField
-            label="Buy Min Amount"
-            type="text"
+            label="Buy Min Amount %"
+            type="number"
             value={buyMinAmount}
-            onChange={(e) => setBuyMinAmount(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                setBuyMinAmount(value);
+              }
+            }}
+            slotProps={{
+              input: {
+                min: 0,
+                max: 100,
+              },
+            }}
             fullWidth
             disabled={config.isRunning}
           />
 
           <TextField
-            label="Buy Max Amount"
-            type="text"
+            label="Buy Max Amount %"
+            type="number"
             value={buyMaxAmount}
-            onChange={(e) => setBuyMaxAmount(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                setBuyMaxAmount(value);
+              }
+            }}
+            slotProps={{
+              input: {
+                min: 0,
+                max: 100,
+              },
+            }}
             fullWidth
             disabled={config.isRunning}
           />
@@ -126,19 +148,41 @@ const Settings = ({ config, setConfig }) => {
           />
 
           <TextField
-            label="Sell Min Amount"
-            type="text"
+            label="Sell Min Amount %"
+            type="number"
             value={sellMinAmount}
-            onChange={(e) => setSellMinAmount(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                setSellMinAmount(value);
+              }
+            }}
+            slotProps={{
+              input: {
+                min: 0,
+                max: 100,
+              },
+            }}
             fullWidth
             disabled={config.isRunning}
           />
 
           <TextField
-            label="Sell Max Amount"
-            type="text"
+            label="Sell Max Amount %"
+            type="number"
             value={sellMaxAmount}
-            onChange={(e) => setSellMaxAmount(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                setSellMaxAmount(value);
+              }
+            }}
+            slotProps={{
+              input: {
+                min: 0,
+                max: 100,
+              },
+            }}
             fullWidth
             disabled={config.isRunning}
           />

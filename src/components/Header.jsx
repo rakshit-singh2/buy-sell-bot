@@ -23,9 +23,9 @@ const Header = () => {
      
 
       <div className="col-md-3">
-        <a className="advancedbtn" href={pathname !== '/advanced' ? '/advanced' : '/'}>
+        {/* <a className="advancedbtn" href={pathname !== '/advanced' ? '/advanced' : '/'}>
           {pathname !== '/advanced' ? 'Advanced' : 'Bot'}
-        </a>
+        </a> */}
 		 <a className="advancedbtn logout" onClick={() => { navigate('/logout'); toggleDrawer(); }}>
           Logout
         </a>

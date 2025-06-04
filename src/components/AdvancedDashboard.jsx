@@ -4,7 +4,7 @@ import {
   Link
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { createWalletClient, createPublicClient, http, formatEther, getContract, parseUnits, encodeFunctionData } from "viem";
+import { createWalletClient, createPublicClient, http, formatEther, getContract, parseUnits, encodeFunctionData, parseEther, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import routerAbi from "../helpers/router.json";
 import tokenAbi from "../helpers/token.json";
@@ -18,7 +18,6 @@ const createData = (count, bnbBalance, expectedRequirement, buyAmount, buyGap, s
 const Dashboard = ({ config, setConfig }) => {
   const chainDetails = useAppSelector((state) => state.chain.chainDetails);
   const [isRunning, setIsRunning] = useState(false);
-  const [walletBalance, setWalletBalance] = useState('');
   const [tokenBalance, setTokenBalance] = useState('');
 
   useEffect(() => {
@@ -39,7 +38,7 @@ const Dashboard = ({ config, setConfig }) => {
   const getRandomInRange = (min, max) => {
     const minNum = parseFloat(min);
     const maxNum = parseFloat(max);
-    return (Math.random() * (maxNum - minNum) + minNum).toFixed(6);
+    return (Math.random() * (maxNum - minNum) + minNum)?.toFixed(6);
   };
 
   const handleStartBot = async () => {
@@ -92,73 +91,82 @@ const Dashboard = ({ config, setConfig }) => {
         try {
           // --- BUY ---
           if (buyCount > 0) {
-            const buyAmount = getRandomInRange(config.buyMinAmount, config.buyMaxAmount);
-            const buyGap = getRandomInRange(config.buyMinGap, config.buyMaxGap);
-
-            rows[i].buyAmount = buyAmount;
-            rows[i].buyGap = buyGap;
-
             const currentBalance = await publicClient.getBalance({ address: account.address });
             rows[i].bnbBalance = `${formatEther(currentBalance)} BNB`;
-            setWalletBalance(`Balance: ${formatEther(currentBalance)} BNB`);
+          
 
-            const amountsIn = await router.read.getAmountsIn([
-              parseUnits(buyAmount, tokenDecimal),
+            const buyPercent = getRandomInRange(config.buyMinAmount, config.buyMaxAmount);
+            const buyAmountBNB = Number(formatEther(currentBalance)) * (buyPercent / 100);
+
+            const buyAmountBNBInWei = parseEther(buyAmountBNB.toString());
+          
+            // Get how many tokens we'll receive for that BNB
+            const amountsOut = await router.read.getAmountsOut([
+              buyAmountBNBInWei,
               [WBNB, config.token]
             ]);
-            const requiredBNB = amountsIn[0];
-
-            rows[i].expectedRequirement = `${formatEther(requiredBNB)} BNB`;
-
-            if (currentBalance < requiredBNB) {
+            const expectedTokens = amountsOut[1];
+          
+            const buyGap = getRandomInRange(config.buyMinGap, config.buyMaxGap);
+          
+            rows[i].buyAmount = `${formatUnits(expectedTokens, tokenDecimal)} ${tokenSymbol} (${buyPercent}%)`;
+            rows[i].buyGap = buyGap;
+            rows[i].expectedRequirement = `${buyAmountBNB} BNB`;
+          
+            if (currentBalance < buyAmountBNBInWei) {
               rows[i].error = "Insufficient BNB for buy";
               break;
             }
-
+          
             const buyTxData = encodeFunctionData({
               abi: routerAbi,
               functionName: "swapExactETHForTokensSupportingFeeOnTransferTokens",
               args: [
-                parseUnits(buyAmount, tokenDecimal),
+                expectedTokens, // amountOutMin (no slippage logic applied here yet)
                 [WBNB, config.token],
                 account.address,
                 Math.floor(Date.now() / 1000) + 60 * 5
               ]
             });
-
+          
             const buyTxHash = await walletClient.sendTransaction({
               account,
               to: config.router,
-              value: requiredBNB,
+              value: buyAmountBNBInWei,
               gas: 300000,
               data: buyTxData
             });
-
+          
             rows[i].buyHash = buyTxHash;
             await publicClient.waitForTransactionReceipt({ hash: buyTxHash });
             buyCount--;
-
+          
             await new Promise(resolve => setTimeout(resolve, Number(buyGap) * 1000));
-          }
+          }          
 
           // --- SELL ---
           if (sellCount > 0) {
-            const sellAmount = getRandomInRange(config.sellMinAmount, config.sellMaxAmount);
-            const sellGap = getRandomInRange(config.sellMinGap, config.sellMaxGap);
-
-            rows[i].sellAmount = sellAmount;
-            rows[i].sellGap = sellGap;
-
             const tokenBal = await publicClient.readContract({
               address: config.token,
               abi: tokenAbi,
               functionName: "balanceOf",
               args: [account.address]
             });
-
-            rows[i].tokenBalance = `${formatEther(tokenBal)} ${tokenSymbol}`;
-            setTokenBalance(`Token Balance: ${formatEther(tokenBal)} ${tokenSymbol}`);
-
+          
+            const tokenBalFormatted = Number(formatUnits(tokenBal, tokenDecimal));
+          
+            const sellPercent = getRandomInRange(config.sellMinAmount, config.sellMaxAmount);
+            const sellAmount = tokenBalFormatted * (sellPercent / 100);
+            const sellAmountInUnits = parseUnits(sellAmount?.toFixed(tokenDecimal), tokenDecimal);
+          
+            const sellGap = getRandomInRange(config.sellMinGap, config.sellMaxGap);
+          
+            rows[i].sellAmount = `${sellAmount?.toFixed(4)} ${tokenSymbol} (${sellPercent}%)`;
+            rows[i].sellGap = sellGap;
+          
+            rows[i].tokenBalance = `${tokenBalFormatted?.toFixed(4)} ${tokenSymbol}`;
+            setTokenBalance(`Token Balance: ${tokenBalFormatted?.toFixed(4)} ${tokenSymbol}`);
+          
             const approveTxHash = await walletClient.writeContract({
               account,
               address: config.token,
@@ -166,48 +174,49 @@ const Dashboard = ({ config, setConfig }) => {
               functionName: "approve",
               args: [
                 config.router,
-                parseUnits(sellAmount, tokenDecimal)
+                sellAmountInUnits
               ]
             });
-
+          
             rows[i].approveHash = approveTxHash;
             await publicClient.waitForTransactionReceipt({ hash: approveTxHash });
-
+          
             const amountsOut = await router.read.getAmountsOut([
-              parseUnits(sellAmount, tokenDecimal),
+              sellAmountInUnits,
               [config.token, WBNB]
             ]);
+          
             const expectedBNB = amountsOut[1];
             const minBNB = expectedBNB - (expectedBNB * BigInt(Math.floor(config.slippage * 100)) / BigInt(100));
-
+          
             rows[i].expectedBnb = `${formatEther(expectedBNB)} BNB`;
             rows[i].minBnb = `${formatEther(minBNB)} BNB`;
-
+          
             const sellTxData = encodeFunctionData({
               abi: routerAbi,
               functionName: "swapExactTokensForETHSupportingFeeOnTransferTokens",
               args: [
-                parseUnits(sellAmount, tokenDecimal),
+                sellAmountInUnits,
                 minBNB,
                 [config.token, WBNB],
                 account.address,
                 Math.floor(Date.now() / 1000) + 60 * 5
               ]
             });
-
+          
             const sellHash = await walletClient.sendTransaction({
               account,
               to: config.router,
               gas: 300000,
               data: sellTxData
             });
-
+          
             rows[i].sellHash = sellHash;
             await publicClient.waitForTransactionReceipt({ hash: sellHash });
             sellCount--;
-
+          
             await new Promise(resolve => setTimeout(resolve, Number(sellGap) * 1000));
-          }
+          }          
 
           rows[i].error = "None";
           rows[i].status = "Success";
@@ -250,7 +259,6 @@ const Dashboard = ({ config, setConfig }) => {
         </Stack>
 
 
-        <Typography variant="h6" sx={{ mt: 4 }}>{walletBalance}</Typography>
         <Typography variant="h6" sx={{ mt: 4 }}>{tokenBalance}</Typography>
         <Typography variant="h6" sx={{ mt: 4 }}>Transaction Records</Typography>
         <TableContainer component={Paper} sx={{ overflowX: "auto" }}>

@@ -4,7 +4,7 @@ import {
   Link
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { createWalletClient, createPublicClient, http, formatEther, getContract, parseUnits, encodeFunctionData } from "viem";
+import { createWalletClient, createPublicClient, http, formatEther, getContract, parseUnits, encodeFunctionData, parseEther, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import routerAbi from "../helpers/router.json";
 import tokenAbi from "../helpers/token.json";
@@ -22,8 +22,6 @@ const createSellData = (count, tokenBalance, bnbBalance, amount, gap, approveHas
 const Dashboard = ({ config, setConfig, buy }) => {
   const chainDetails = useAppSelector((state) => state.chain);
   const [isRunning, setIsRunning] = useState(false);
-  const [walletBalance, setWalletBalance] = useState('');
-  const [tokenBalance, setTokenBalance] = useState('');
   const [allowance, setaAllowance] = useState('');
 
   useEffect(() => {
@@ -83,36 +81,40 @@ const Dashboard = ({ config, setConfig, buy }) => {
       functionName: "symbol",
     });
 
-
     if (buy) {
       for (let i = 0; i < config.transactions; i++) {
         try {
-          const amountForStep = (
-            Math.random() * (parseFloat(config.maxAmount) - parseFloat(config.minAmount)) +
-            parseFloat(config.minAmount)
-          ).toFixed(6);
+          const percent = Math.random() * (parseFloat(config.maxAmount) - parseFloat(config.minAmount)) + parseFloat(config.minAmount);
+
+          const currentBalance = await publicClient.getBalance({ address: account.address });
+          const bnbBalanceEth = parseFloat(formatEther(currentBalance));
+          rows[i].bnbBalance = `${bnbBalanceEth} BNB`;
+          const bnbToUse = (bnbBalanceEth * percent / 100).toFixed(6);
 
           const gapForStep = Math.floor(
             Math.random() * (parseInt(config.maxGap) - parseInt(config.minGap)) +
             parseInt(config.minGap)
           );
 
-          rows[i].amount = amountForStep;
+          rows[i].amount = bnbToUse + '(' + percent + '%)';
           rows[i].gap = gapForStep;
 
           if (i !== 0) {
             await new Promise((resolve) => setTimeout(resolve, gapForStep * 1000));
           }
 
-          const currentBalance = await publicClient.getBalance({ address: account.address });
-          rows[i].bnbBalance = `${formatEther(currentBalance)} BNB`;
-          setWalletBalance(`Balance: ${formatEther(currentBalance)} BNB`);
+          const amountsOut = await router.read.getAmountsOut([
+            parseEther(bnbToUse),
+            [WBNB, config.token]
+          ]);
 
+          const expectedTokens = amountsOut[1];
           const amountsIn = await router.read.getAmountsIn([
-            parseUnits(amountForStep.toString(), tokenDecimal),
+            expectedTokens,
             [WBNB, config.token],
           ]);
           const requiredBNB = amountsIn[0];
+
           rows[i].expectedRequirement = `${formatEther(requiredBNB)} BNB`;
 
           if (currentBalance < requiredBNB) {
@@ -125,7 +127,7 @@ const Dashboard = ({ config, setConfig, buy }) => {
             abi: routerAbi,
             functionName: "swapExactETHForTokensSupportingFeeOnTransferTokens",
             args: [
-              parseUnits(amountForStep.toString(), tokenDecimal),
+              expectedTokens,
               [WBNB, config.token],
               account.address,
               Math.floor(Date.now() / 1000) + 60 * 5,
@@ -146,40 +148,42 @@ const Dashboard = ({ config, setConfig, buy }) => {
           rows[i].status = "Success";
         } catch (error) {
           console.error({ error });
-          alert("Error executing trade: " + (error?.shortMessage || error.message));
+          alert("Error executing buy: " + (error?.shortMessage || error.message));
           rows[i].error = error?.shortMessage || error.message;
           rows[i].status = "Failed";
           setIsRunning(false);
           break;
         }
       }
-    }
-
-    else {
+    }else {
       try {
-        const sellAmounts = Array.from({ length: config.transactions }).map(() =>
-          parseFloat(
-            (
-              Math.random() * (parseFloat(config.maxAmount) - parseFloat(config.minAmount)) +
-              parseFloat(config.minAmount)
-            ).toFixed(6)
-          )
-        );
-
-        const totalSellAmount = sellAmounts.reduce((sum, val) => sum + val, 0);
-
-        const tokenBalance = await publicClient.readContract({
+        // Get current token balance once at the beginning (raw & formatted)
+        const tokenBalanceRaw = await publicClient.readContract({
           address: config.token,
           abi: tokenAbi,
           functionName: "balanceOf",
           args: [account.address],
         });
-
-        if (parseFloat(formatEther(tokenBalance)) < totalSellAmount) {
+        const tokenBalanceFormatted = parseFloat(formatUnits(tokenBalanceRaw, tokenDecimal));
+    
+        // Generate random percentages between min and max
+        const sellPercents = Array.from({ length: config.transactions }).map(() =>
+          Math.random() * (parseFloat(config.maxAmount) - parseFloat(config.minAmount)) + parseFloat(config.minAmount)
+        );
+    
+        // Calculate sell amounts based on percentages
+        const sellAmounts = sellPercents.map(
+          (p) => parseFloat(((tokenBalanceFormatted * p) / 100).toFixed(6))
+        );
+    
+        const totalSellAmount = sellAmounts.reduce((sum, a) => sum + a, 0);
+    
+        if (tokenBalanceFormatted < totalSellAmount) {
           setaAllowance("Insufficient token balance for the required number of sells, stopping sale.");
           return;
         }
-
+    
+        // Approve totalSellAmount
         const approveTxHash = await walletClient.writeContract({
           account,
           address: config.token,
@@ -190,63 +194,66 @@ const Dashboard = ({ config, setConfig, buy }) => {
             parseUnits(totalSellAmount.toString(), tokenDecimal),
           ],
         });
-
+    
         await publicClient.waitForTransactionReceipt({ hash: approveTxHash });
-
+    
+        // Check allowance
         const allowance = await publicClient.readContract({
           address: config.token,
           abi: tokenAbi,
           functionName: "allowance",
           args: [account.address, config.router],
         });
-
-        if (parseFloat(formatEther(allowance)) < totalSellAmount) {
+    
+        const allowanceFormatted = parseFloat(formatUnits(allowance, tokenDecimal));
+        if (allowanceFormatted < totalSellAmount) {
           alert("Allowance is insufficient, stopping sale.");
           return;
         }
-
+    
         for (let i = 0; i < config.transactions; i++) {
           try {
             const amountForStep = sellAmounts[i];
+            const percentForStep = sellPercents[i];
             const gapForStep = Math.floor(
-              Math.random() * (parseInt(config.maxGap) - parseInt(config.minGap)) +
-              parseInt(config.minGap)
+              Math.random() * (parseInt(config.maxGap) - parseInt(config.minGap)) + parseInt(config.minGap)
             );
-            rows[i].amount = sellAmounts[i];
+    
+            rows[i].amount = `${amountForStep} (${percentForStep.toFixed(2)}%)`;
             rows[i].gap = gapForStep;
+    
             if (i !== 0) {
               await new Promise((resolve) => setTimeout(resolve, gapForStep * 1000));
             }
-
-            const currentBalance = await publicClient.getBalance({ address: account.address });
-            rows[i].bnbBalance = `${formatEther(currentBalance)} BNB`;
-            setWalletBalance(`Balance: ${formatEther(currentBalance)} BNB`);
-
-            const tokenBal = await publicClient.readContract({
+    
+            // Refresh balances for display
+            const currentTokenBalRaw = await publicClient.readContract({
               address: config.token,
               abi: tokenAbi,
               functionName: "balanceOf",
               args: [account.address],
             });
-
-            rows[i].tokenBalance = `${formatEther(tokenBal)} ${tokenSymbol}`;
-            setTokenBalance(`Token Balance: ${formatEther(tokenBal)} ${tokenSymbol}`);
-
-            rows[i].approveHash = approveTxHash;
-
+    
+            const tokenBal = parseFloat(formatUnits(currentTokenBalRaw, tokenDecimal));
+            rows[i].tokenBalance = `${tokenBal.toFixed(6)} Tokens`;
+    
+            const currentBalance = await publicClient.getBalance({ address: account.address });
+            const bnbBalance = parseFloat(formatEther(currentBalance));
+            rows[i].bnbBalance = `${bnbBalance.toFixed(6)} BNB`;
+    
             const amountsOut = await router.read.getAmountsOut([
               parseUnits(amountForStep.toString(), tokenDecimal),
               [config.token, WBNB],
             ]);
-
+    
             const expectedBNB = amountsOut[1];
-            const minBNBOut =
-              expectedBNB -
-              (expectedBNB * BigInt(Math.floor(config.slippage * 100))) / BigInt(100);
-
+            const slippageFactor = BigInt(Math.floor(config.slippage * 100));
+            const minBNBOut = expectedBNB - (expectedBNB * slippageFactor) / BigInt(100);
+    
             rows[i].expectedBnb = `${formatEther(expectedBNB)} BNB`;
             rows[i].minBnb = `${formatEther(minBNBOut)} BNB`;
-
+            rows[i].approveHash = approveTxHash;
+    
             const txData = encodeFunctionData({
               abi: routerAbi,
               functionName: "swapExactTokensForETHSupportingFeeOnTransferTokens",
@@ -258,14 +265,14 @@ const Dashboard = ({ config, setConfig, buy }) => {
                 Math.floor(Date.now() / 1000) + 60 * 5,
               ],
             });
-
+    
             const txHash = await walletClient.sendTransaction({
               account,
               to: config.router,
               data: txData,
               gas: 300000,
             });
-
+    
             rows[i].sellHash = txHash;
             await publicClient.waitForTransactionReceipt({ hash: txHash });
             rows[i].error = "None";
@@ -286,7 +293,6 @@ const Dashboard = ({ config, setConfig, buy }) => {
       }
       setIsRunning(false);
     }
-
     setIsRunning(false);
   };
 
@@ -310,8 +316,7 @@ const Dashboard = ({ config, setConfig, buy }) => {
         </Stack>
 
 
-        <Typography variant="h6" sx={{ mt: 4 }}>{walletBalance}</Typography>
-        <Typography variant="h6" sx={{ mt: 4 }}>{tokenBalance}</Typography>
+        {allowance && <Typography variant="h6" sx={{ mt: 4 }}>{allowance}</Typography>}
         <Typography variant="h6" sx={{ mt: 4 }}>Transaction Records</Typography>
         <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
           <Table size="medium" aria-label="transaction table">
